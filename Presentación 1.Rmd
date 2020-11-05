@@ -1,0 +1,88 @@
+---
+title: "Capital Budgeting "
+subtitle: "⚔<br/>Cashflows"
+author: "Raúl Blé"
+institute: "Gibran y sus clases"
+date: "10/19/2020(updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+background-image: url(https://upload.wikimedia.org/wikipedia/commons/b/be/Sharingan_triple.svg)
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(tidyverse)
+library(gt)
+library(glue)
+
+```
+
+---
+
+
+# NPV caso base
+```{r NPV_BASE, echo=FALSE}
+
+
+
+cash_flows <- tibble(
+  t = 0:5,
+  cf = c(-50000 , 15000 , 15000 , 20000 , 10000 , 5000))
+
+npv_base <- cash_flows %>% 
+  mutate(dcf = cf*1.08^-t) %>% 
+  summarise(npv = sum(dcf)) %>% 
+  pull(npv) #Saca el valor del Dataframe
+
+cash_flows %>% 
+  gt() %>% 
+  tab_header(
+    title = "Pérfil de pagos"
+  ) %>% 
+   fmt_currency(
+    columns = vars(cf),
+    currency = "USD")
+
+#signif - Determina cuantos decimales de datos se imprimen  
+```
+
+Este pérfil de pagos a una WACC del 8% tiene un VPN de `r signif (npv_base , 6)` 
+
+---
+# Sensibilidad NPV
+```{r NPV_DOS, echo=FALSE, message=FALSE,warning=FALSE,verbose=FALSE,fig.align='center'}
+
+npv_dos <- tibble(
+  i = seq(from = 0 , to = .16 , by = .02) #Función de secuencia 
+  ) %>%
+  group_by(i) %>%  #para cada i has (lo de abajo)
+  summarise(
+    npv = tidyquant::NPV(
+      cashflow = cash_flows$cf , #$ - selecciona una columna - subsetting  #El menos quita el argumento
+      rate = i
+    ) 
+  ) %>% 
+  mutate(
+    NPV_noise = rnorm(n = 1, 
+                       mean = 0,
+                      sd = 20000 )+ npv
+      )
+
+npv_dos %>% 
+  ggplot()+
+  aes(x = i, y = npv)+
+  geom_line()
+  
+
+  
+  #para cada tasa de interes me aplica el group_by en cada cash flow
+
+
+```
+

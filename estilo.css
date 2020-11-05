@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400&display=swap');
+
+
+.remark-slide-content h2 {
+    font-size: 45px;
+    color: #2833FC;
+}
+
+.inverse h1 {
+    color: #f76a05;
+    font-family: 'Arvo', serif;
+}
+
+
+.remark-slide table {
+    margin: auto;
+    border-top: 10px solid #815e5e;
+    border-bottom: 10px solid #815e5e;
+}
+
+.remark-slide thead, .remark-slide tfoot, .remark-slide tr:nth-child(even) {
+    background: #3bbecb;
+}
+
+.remark-slide table thead th {
+    border-bottom: 2px solid #4523b5;
+}

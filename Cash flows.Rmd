@@ -1,0 +1,111 @@
+---
+title: "Capital Budgeting "
+subtitle: "<br/>Cashflows"
+author: "Raúl Blé"
+institute: "Gibran y la programación"
+date: "10/19/2020 (Actualizado el: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: ["default", "estilo.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQ-Uj8lstNdD1abQwNdoz_kGEyehp1_mru5jg&usqp=CAU)
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(tidyverse)
+library(gt)
+library(glue)
+
+```
+
+---
+
+class: title-slide, center
+background-color: #FFFBF2
+## NPV caso base
+```{r NPV_BASE, echo=FALSE}
+
+
+cash_flows <- tibble(
+  t = 0:5,
+  cf = c(-50000 , 15000 , 15000 , 20000 , 10000 , 5000))
+
+npv_base <- cash_flows %>% 
+  mutate(dcf = cf*1.08^-t) %>% 
+  summarise(npv = sum(dcf)) %>% 
+  pull(npv) #Saca el valor del Dataframe
+
+cash_flows %>% 
+  gt() %>% 
+  tab_header(
+    title = "Pérfil de pagos"
+  ) %>% 
+   fmt_currency(
+    columns = vars(cf),
+    currency = "USD")
+
+#signif - Determina cuantos decimales de datos se imprimen  
+```
+
+Este pérfil de pagos a una WACC del 8% tiene un VPN de `r signif (npv_base , 6)` 
+
+---
+
+class: title-slide, center
+background-color: #FFFBF2
+# Sensibilidad NPV
+```{r NPV_DOS, echo=FALSE, message=FALSE,warning=FALSE,verbose=FALSE,fig.align='center'}
+
+npv_dos <- tibble(
+  i = seq(from = 0 , to = .16 , by = .02) #Función de secuencia 
+  ) %>%
+  group_by(i) %>%  #para cada i has (lo de abajo)
+  summarise(
+    npv = tidyquant::NPV(
+      cashflow = cash_flows$cf , #$ - selecciona una columna - subsetting  #El menos quita el argumento
+      rate = i
+    ) 
+  ) %>% 
+  mutate(
+    NPV_noise = rnorm(n = 1, 
+                       mean = 0,
+                      sd = 20000 )+ npv
+      )
+
+npv_dos %>% 
+  ggplot()+
+  aes(x = i, y = npv)+
+  geom_line()
+  
+
+  
+  #para cada tasa de interes me aplica el group_by en cada cash flow
+
+
+```
+
+---
+
+background-image: url(https://blog.award.co/hubfs/Thankyou.png)
+background-size: contain
+
+```{r Code ,echo=FALSE, message=FALSE,warning=FALSE,verbose=FALSE,fig.align='center'}
+
+ escnr <- tibble(
+  scnr = seq(from = 1, to = 1000, by = 1000),
+  cf1 = rnorm(1000, mean = cash_flows$cf[2], sd = 15000),
+  cf2 = rnorm(1000, mean = cash_flows$cf[3], sd = 15000)) %>% 
+  pivot_longer(-scnr)
+ 
+ 
+ 
+ 
+```
+
